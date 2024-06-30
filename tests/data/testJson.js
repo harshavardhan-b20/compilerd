@@ -298,6 +298,248 @@ const testCases = [
             error: 0,
         },
     },
+{
+        name: 'Valid JavaScript code execution',
+        reqObject: {
+            language: 'javascript',
+            script: 'console.log("Hello, World!");',
+        },
+        expectedResponse: {
+            val: 'Hello, World!\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Valid Python code execution',
+        reqObject: {
+            language: 'python',
+            script: 'print("Hello, World!")',
+        },
+        expectedResponse: {
+            val: 'Hello, World!\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Invalid language',
+        reqObject: {
+            language: 'unknown',
+            script: 'print("Hello, World!")',
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Unsupported language',
+        },
+    },
+    {
+        name: 'Malformed JSON input',
+        reqObject: '{"language": "python", "script": "print("Hello, World!")"}',
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Invalid JSON found',
+        },
+    },
+    {
+        name: 'Missing required field: script',
+        reqObject: {
+            language: 'python',
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Validation error: "script" is required',
+        },
+    },
+    {
+        name: 'SQL Injection attempt',
+        reqObject: {
+            language: 'python',
+            script: 'print("1; DROP TABLE users;")',
+        },
+        expectedResponse: {
+            val: '1; DROP TABLE users;\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Valid large input',
+        reqObject: {
+            language: 'python',
+            script: 'print("A".repeat(10000))',
+        },
+        expectedResponse: {
+            val: 'A'.repeat(10000) + '\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Invalid type for script field',
+        reqObject: {
+            language: 'python',
+            script: 12345,
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Validation error: "script" must be a string',
+        },
+    },
+    {
+        name: 'Compilation error in C++',
+        reqObject: {
+            language: 'cpp',
+            script: '#include <iostream>\nint main() { std::cout << "Hello, World! }',
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Compilation error',
+        },
+    },
+    {
+        name: 'Runtime error in JavaScript',
+        reqObject: {
+            language: 'javascript',
+            script: 'console.log(nonexistentVariable);',
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Runtime error',
+        },
+    },
+    {
+        name: 'Edge case: empty script',
+        reqObject: {
+            language: 'python',
+            script: '',
+        },
+        expectedResponse: {
+            val: '',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Edge case: minimum valid input',
+        reqObject: {
+            language: 'python',
+            script: 'print("")',
+        },
+        expectedResponse: {
+            val: '\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Edge case: maximum valid input size',
+        reqObject: {
+            language: 'python',
+            script: 'print("A".repeat(1048576))',  // 1MB script
+        },
+        expectedResponse: {
+            val: 'A'.repeat(1048576) + '\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Invalid JSON syntax: missing closing bracket',
+        reqObject: '{"language": "python", "script": "print("Hello, World!"}',
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Invalid JSON found',
+        },
+    },
+    {
+        name: 'Invalid JSON syntax: extra comma',
+        reqObject: '{"language": "python", "script": "print("Hello, World!")",}',
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Invalid JSON found',
+        },
+    },
+    {
+        name: 'Long-running script',
+        reqObject: {
+            language: 'python',
+            script: 'import time\ntime.sleep(5)\nprint("Done")',
+        },
+        expectedResponse: {
+            val: 'Done\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Burst of simultaneous requests',
+        reqObject: {
+            language: 'python',
+            script: 'print("Burst Test")',
+        },
+        expectedResponse: {
+            val: 'Burst Test\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Command injection attempt',
+        reqObject: {
+            language: 'python',
+            script: 'import os\nos.system("ls")',
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Security error: command injection attempt',
+        },
+    },
+    {
+        name: 'Path traversal attack',
+        reqObject: {
+            language: 'python',
+            script: 'with open("../../etc/passwd", "r") as f:\n    print(f.read())',
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Security error: path traversal attempt',
+        },
+    },
+    {
+        name: 'Valid Ruby code execution',
+        reqObject: {
+            language: 'ruby',
+            script: 'puts "Hello, World!"',
+        },
+        expectedResponse: {
+            val: 'Hello, World!\n',
+            status: 200,
+            error: null,
+        },
+    },
+    {
+        name: 'Syntax error in Java code',
+        reqObject: {
+            language: 'java',
+            script: 'public class Main { public static void main(String[] args) { System.out.println("Hello, World!"; } }',
+        },
+        expectedResponse: {
+            val: null,
+            status: 400,
+            error: 'Syntax error',
+        },
+    },
 ]
 
 module.exports = { testCases }
